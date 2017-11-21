@@ -88,22 +88,40 @@ class Visualization(object):
 
     def __init__(self, seq_info, update_ms):
         image_shape = seq_info["image_size"][::-1]
+
         aspect_ratio = float(image_shape[1]) / image_shape[0]
         image_shape = 1024, int(aspect_ratio * 1024)
         self.viewer = ImageViewer(
             update_ms, image_shape, "Figure %s" % seq_info["sequence_name"])
         self.viewer.thickness = 2
         self.frame_idx = seq_info["min_frame_idx"]
+        self.now_idx = seq_info["now_idx"]
         self.last_idx = seq_info["max_frame_idx"]
+        
 
     def run(self, frame_callback):
         self.viewer.run(lambda: self._update_fun(frame_callback))
 
+    def run2(self, frame_callback2):
+        self.viewer.run(lambda: self._update_fun2(frame_callback2))    
+
+    
     def _update_fun(self, frame_callback):
         if self.frame_idx > self.last_idx:
             return False  # Terminate
+        #if self.frame_idx == self.now_idx:
         frame_callback(self, self.frame_idx)
         self.frame_idx += 1
+        
+        return True
+
+    def _update_fun2(self, frame_callback2):
+        if self.frame_idx > self.now_idx:
+            return False  # Terminate
+        if self.frame_idx == self.now_idx:
+            frame_callback2(self, self.frame_idx)
+        self.frame_idx += 1
+        
         return True
 
     def set_image(self, image):
